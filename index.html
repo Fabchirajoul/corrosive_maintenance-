@@ -104,7 +104,7 @@
     </div>
   </section>
 
-  <!-- 3.4.2 Automated Detection (CV) — REBUILT -->
+  <!-- 3.4.2 Automated Detection (CV) -->
   <section id="autocv" class="module">
     <div class="card section-card mb-3">
       <div class="card-header bg-success text-white"><i class="bi bi-bounding-box me-1"></i> Automated Detection — Images / Video (AI CV)</div>
@@ -184,7 +184,7 @@
           <tbody id="tblCV">
             <tr>
               <td>2025-09-18</td><td>shaft_beam_3.jpg</td><td>Rust: 5, Coating Failure: 2</td>
-              <td><button class="btn btn-sm btn-outline-primary" data-detail="%7B%22mode%22%3A%22image%22%2C%22img%22%3A%22%22%7D">View</button></td>
+              <td><button type="button" class="btn btn-sm btn-outline-primary" data-detail="%7B%22mode%22%3A%22image%22%2C%22img%22%3A%22%22%7D">View</button></td>
             </tr>
           </tbody>
         </table>
@@ -219,19 +219,100 @@
     </div>
   </section>
 
-  <!-- 3.4.5 Remote Monitoring -->
+  <!-- 3.4.5 Remote Monitoring — Underground Start-up Environmental Check -->
   <section id="remote" class="module">
     <div class="card section-card mb-3">
-      <div class="card-header bg-success text-white"><i class="bi bi-rss me-1"></i> Remote Monitoring — Live Sensors</div>
+      <div class="card-header bg-success text-white">
+        <i class="bi bi-rss me-1"></i> Remote Monitoring — Underground Start-up Environmental Check
+      </div>
       <div class="card-body">
-        <div class="note mb-2">Inputs: IoT feeds (corrosion probes, humidity, temp). Output: live bar chart, threshold alerts (conceptual).</div>
+        <div class="note mb-2">
+          Inputs: fixed & portable gas monitors, dust/DPM samplers, thermo-hygrometers, anemometers, barometers, water ingress sensors, seismic feed. 
+          Output: <strong>GO / CAUTION / NO-GO</strong> decision with reasons, live chart & threshold table.
+          <br><span class="text-muted">Thresholds included here are placeholders — confirm with your mine’s statutory limits/procedures.</span>
+        </div>
+
         <form id="formRemote" class="row g-2">
-          <div class="col-md-4"><label class="form-label">Station</label><input class="form-control" name="station" value="PERIM-NE-02"></div>
-          <div class="col-md-4"><label class="form-label">Update Every (sec)</label><input type="number" class="form-control" name="freq" value="5"></div>
-          <div class="col-md-4 d-grid"><label class="form-label invisible">.</label><button class="btn btn-success" type="submit">Start</button></div>
+          <div class="col-md-3">
+            <label class="form-label">Station</label>
+            <input class="form-control" name="station" value="LEVEL-24 CC-07">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Profile</label>
+            <select class="form-select" name="profile">
+              <option selected>Production</option>
+              <option>Development</option>
+              <option>Refuge Bay</option>
+              <option>Maintenance</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Update Every (sec)</label>
+            <input type="number" class="form-control" name="freq" value="5" min="2" max="60">
+          </div>
+          <div class="col-md-3 d-grid">
+            <label class="form-label invisible">.</label>
+            <button class="btn btn-success" type="submit">Start Monitoring</button>
+          </div>
+
+          <div class="col-12">
+            <details class="mt-2">
+              <summary class="fw-semibold">Edit Thresholds (optional)</summary>
+              <div class="table-responsive mt-2">
+                <table class="table table-sm align-middle mb-0">
+                  <thead class="table-light">
+                    <tr><th>Parameter</th><th>Unit</th><th>Min</th><th>Max</th><th>Critical?</th></tr>
+                  </thead>
+                  <tbody id="remoteThresholds"></tbody>
+                </table>
+                <div class="text-end mt-2">
+                  <button id="saveThresholds" type="button" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-save me-1"></i>Save Thresholds
+                  </button>
+                </div>
+              </div>
+            </details>
+          </div>
         </form>
+
         <hr>
-        <div class="border rounded p-3"><div class="fw-bold">Live Readings</div><canvas id="remoteBar" height="150"></canvas></div>
+
+        <!-- Status -->
+        <div class="border rounded p-3 mb-3">
+          <div class="d-flex align-items-center justify-content-between">
+            <div class="fw-bold">Start-up Status</div>
+            <span id="remoteBadge" class="badge bg-secondary">IDLE</span>
+          </div>
+          <div id="remoteReasons" class="mt-2 small text-muted">Press “Start Monitoring”.</div>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-xl-7">
+            <div class="border rounded p-3">
+              <div class="fw-bold">Live Compliance by Parameter (%)</div>
+              <canvas id="remoteBar" height="160"></canvas>
+              <div class="small mt-2">
+                <span class="legend-badge" style="background:#5cb85c"></span>OK 
+                &nbsp;&nbsp;<span class="legend-badge" style="background:#f0ad4e"></span>Near limit 
+                &nbsp;&nbsp;<span class="legend-badge" style="background:#d9534f"></span>Out of limit
+              </div>
+            </div>
+          </div>
+          <div class="col-xl-5">
+            <div class="border rounded p-3 h-100">
+              <div class="fw-bold">Live Readings vs Limits</div>
+              <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0">
+                  <thead class="table-light">
+                    <tr><th>Parameter</th><th>Value</th><th>Limit</th><th>State</th></tr>
+                  </thead>
+                  <tbody id="remoteLiveTable"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -239,7 +320,9 @@
       <div class="card-header">Recent Streams</div>
       <div class="card-body p-0">
         <table class="table table-sm mb-0 align-middle">
-          <thead class="table-light"><tr><th>Time</th><th>Station</th><th>Sensors</th><th>Max (%)</th><th>Action</th></tr></thead>
+          <thead class="table-light">
+            <tr><th>Time</th><th>Station</th><th>Status</th><th>Criticals</th><th>Action</th></tr>
+          </thead>
           <tbody id="tblRemote"></tbody>
         </table>
       </div>
@@ -384,11 +467,12 @@ document.getElementById("nav").addEventListener("click",function(e){
   }
 });
 
+/* utility to add a history row with a "View" button carrying a data-detail payload */
 function addRow(tbodyId, cells, detail){
   var tb=document.getElementById(tbodyId);
   var tr=document.createElement("tr");
 
-  for(var i=0;i<cells.length;i++){
+  for (var i=0;i<cells.length;i++){
     var td=document.createElement("td");
     td.textContent=cells[i];
     tr.appendChild(td);
@@ -396,6 +480,7 @@ function addRow(tbodyId, cells, detail){
 
   var btnCell=document.createElement("td");
   var btn=document.createElement("button");
+  btn.type = "button"; // prevent accidental form submissions
   btn.className="btn btn-sm btn-outline-primary";
   btn.textContent="View";
   try{
@@ -704,6 +789,7 @@ document.getElementById("cvSave").addEventListener("click", function(){
   var td3=document.createElement("td"); td3.textContent=summary || "—";
   var td4=document.createElement("td");
   var btn=document.createElement("button");
+  btn.type="button";
   btn.className="btn btn-sm btn-outline-primary";
   btn.textContent="View";
   btn.dataset.detail=encodeURIComponent(JSON.stringify({mode:"image",img:cvAnnotatedURL}));
@@ -755,32 +841,272 @@ document.getElementById("formTwin").addEventListener("submit",function(e){
   addRow("tblTwin",[new Date().toISOString().slice(0,10),"Asset",String(n),"Auto grid"],{mode:"scatter",points:pts});
 });
 
-/* ---------- 3.4.5 Remote Monitoring ---------- */
-var remoteBar=new Chart(
+/* ---------- 3.4.5 Remote Monitoring — Underground Start-up Environmental Check ---------- */
+
+// Default parameter set (edit as needed; values are illustrative)
+const REMOTE_DEFAULTS = [
+  { key:"O2",     label:"O₂",              unit:"%",     min:19.5, max:23.5, critical:true,  type:"range" },
+  { key:"CH4",    label:"CH₄",             unit:"%",     min:null, max:1.00, critical:true,  type:"max"   },
+  { key:"CO",     label:"CO",              unit:"ppm",   min:null, max:25,   critical:true,  type:"max"   },
+  { key:"CO2",    label:"CO₂",             unit:"%",     min:null, max:0.50, critical:true,  type:"max"   },
+  { key:"H2S",    label:"H₂S",             unit:"ppm",   min:null, max:10,   critical:true,  type:"max"   },
+  { key:"NO2",    label:"NO₂",             unit:"ppm",   min:null, max:3,    critical:true,  type:"max"   },
+  { key:"SO2",    label:"SO₂",             unit:"ppm",   min:null, max:2,    critical:true,  type:"max"   },
+  { key:"DPM",    label:"Diesel Particulate", unit:"µg/m³", min:null, max:160, critical:true, type:"max"   },
+  { key:"RCS",    label:"Resp. Cryst. Silica", unit:"mg/m³", min:null, max:0.05,critical:true, type:"max"  },
+  { key:"Dust",   label:"Respirable Dust", unit:"mg/m³", min:null, max:2.0,  critical:true,  type:"max"   },
+  { key:"WBGT",   label:"Heat (WBGT)",     unit:"°C",    min:null, max:28,   critical:true,  type:"max"   },
+  { key:"XTemp",  label:"Crosscut Temp",   unit:"°C",    min:null, max:32,   critical:false, type:"max"   },
+  { key:"RH",     label:"Humidity",        unit:"%",     min:null, max:85,   critical:false, type:"max"   },
+  { key:"Air",    label:"Airflow",         unit:"m/s",   min:0.5,  max:null, critical:true,  type:"min"   },
+  { key:"Baro",   label:"Barometric",      unit:"kPa",   min:80,   max:110,  critical:false, type:"range" },
+  { key:"Noise",  label:"Noise",           unit:"dBA",   min:null, max:85,   critical:false, type:"max"   },
+  { key:"Water",  label:"Water Ingress",   unit:"mm/h",  min:null, max:0,    critical:true,  type:"max"   },
+  { key:"Seis",   label:"Seismic (ML 24h)",unit:"ML",    min:null, max:2.0,  critical:true,  type:"max"   },
+];
+
+// Per-profile tweaks (examples)
+const PROFILE_ADJUST = {
+  "Production":  (p)=>p,
+  "Development": (p)=> p.key==="Air" ? { ...p, min:0.7 } : p,
+  "Refuge Bay":  (p)=> p.key==="WBGT" ? { ...p, max:27 } : p,
+  "Maintenance": (p)=> p.key==="Noise" ? { ...p, max:80 } : p,
+};
+
+let remoteParams = JSON.parse(JSON.stringify(REMOTE_DEFAULTS));
+let remoteBar = null;
+let liveTimer = null;
+
+// Build thresholds editable table (initial)
+(function renderThresholds(){
+  const tb = document.getElementById("remoteThresholds");
+  tb.innerHTML = "";
+  remoteParams.forEach((p, idx)=>{
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${p.label}</td>
+      <td>${p.unit}</td>
+      <td><input type="number" step="0.001" class="form-control form-control-sm" 
+                 data-idx="${idx}" data-k="min" value="${p.min ?? ""}" placeholder="—"></td>
+      <td><input type="number" step="0.001" class="form-control form-control-sm" 
+                 data-idx="${idx}" data-k="max" value="${p.max ?? ""}" placeholder="—"></td>
+      <td class="text-center">
+        <input type="checkbox" class="form-check-input" data-idx="${idx}" data-k="critical" ${p.critical?"checked":""}>
+      </td>
+    `;
+    tb.appendChild(tr);
+  });
+})();
+
+document.getElementById("saveThresholds").addEventListener("click", ()=>{
+  const inputs = document.querySelectorAll("#remoteThresholds [data-idx]");
+  inputs.forEach(el=>{
+    const i = parseInt(el.dataset.idx,10);
+    const k = el.dataset.k;
+    if(k==="critical"){ remoteParams[i][k]=el.checked; return; }
+    const v = el.value==="" ? null : parseFloat(el.value);
+    remoteParams[i][k] = Number.isFinite(v) ? v : null;
+  });
+});
+
+// Helpers
+function inRange(val, p){
+  if(p.type==="min")   return (p.min!=null) ? (val>=p.min) : true;
+  if(p.type==="max")   return (p.max!=null) ? (val<=p.max) : true;
+  const lo = (p.min!=null) ? val>=p.min : true;
+  const hi = (p.max!=null) ? val<=p.max : true;
+  return lo && hi;
+}
+function nearLimit(val, p){
+  const pct = 0.10;
+  if(p.type==="min" && p.min!=null) return val < (p.min + Math.abs(p.min)*pct);
+  if(p.type==="max" && p.max!=null) return val > (p.max - Math.abs(p.max)*pct);
+  const nearLo = (p.min!=null) ? (val < p.min + Math.abs(p.min)*pct) : false;
+  const nearHi = (p.max!=null) ? (val > p.max - Math.abs(p.max)*pct) : false;
+  return nearLo || nearHi;
+}
+function stateColor(val, p){
+  if(!inRange(val,p)) return "#d9534f";
+  if(nearLimit(val,p)) return "#f0ad4e";
+  return "#5cb85c";
+}
+function compliancePercent(val, p){
+  if(!inRange(val,p)) return 0;
+  if(nearLimit(val,p)) return 60;
+  return 100;
+}
+
+// Simulated live sensor values (replace with your real feeds)
+function sampleLiveValue(p){
+  const jitter = (base, span)=> base + (Math.random()-0.5)*span;
+  switch(p.key){
+    case "O2":  return jitter(20.9, 1.0);
+    case "CH4": return Math.max(0, jitter(0.2, 0.25));
+    case "CO":  return Math.max(0, jitter(8, 10));
+    case "CO2": return Math.max(0, jitter(0.25, 0.25));
+    case "H2S": return Math.max(0, jitter(2, 4));
+    case "NO2": return Math.max(0, jitter(1, 1.2));
+    case "SO2": return Math.max(0, jitter(0.8, 1.0));
+    case "DPM": return Math.max(40, jitter(120, 120));
+    case "RCS": return Math.max(0.01, jitter(0.03, 0.03));
+    case "Dust":return Math.max(0.2, jitter(1.0, 1.2));
+    case "WBGT":return jitter(26, 4);
+    case "XTemp":return jitter(30, 5);
+    case "RH":  return Math.min(100, Math.max(30, jitter(70, 30)));
+    case "Air": return Math.max(0.2, jitter(0.9, 0.6));
+    case "Baro":return jitter(101.3, 8);
+    case "Noise":return Math.max(60, jitter(82, 12));
+    case "Water":return Math.max(0, Math.random()<0.1 ? jitter(2,2) : 0);
+    case "Seis": return Math.max(0, Math.random()<0.05 ? jitter(2.1,1.0) : jitter(0.6,0.8));
+    default: return 0;
+  }
+}
+
+// Build live table rows
+function renderLiveTable(readings){
+  const tb = document.getElementById("remoteLiveTable");
+  tb.innerHTML = "";
+  readings.forEach(r=>{
+    const tr = document.createElement("tr");
+    const limTxt = (()=>{
+      if(r.par.type==="min")   return `≥ ${r.par.min} ${r.par.unit}`;
+      if(r.par.type==="max")   return `≤ ${r.par.max} ${r.par.unit}`;
+      const a = (r.par.min!=null)?r.par.min:"—";
+      const b = (r.par.max!=null)?r.par.max:"—";
+      return `${a}–${b} ${r.par.unit}`;
+    })();
+    const badge = inRange(r.val, r.par) ? 
+      (nearLimit(r.val, r.par) ? '<span class="badge bg-warning text-dark">Near</span>' : '<span class="badge bg-success">OK</span>') :
+      '<span class="badge bg-danger">Out</span>';
+
+    tr.innerHTML = `
+      <td>${r.par.label}</td>
+      <td>${r.val.toFixed(r.par.unit==="%"||r.par.unit==="°C"||r.par.unit==="m/s"?2:2)} ${r.par.unit}</td>
+      <td>${limTxt}</td>
+      <td>${badge}</td>
+    `;
+    tb.appendChild(tr);
+  });
+}
+
+// Decide GO / CAUTION / NO-GO
+function decideStatus(readings){
+  const criticalOut = readings.filter(r=> r.par.critical && !inRange(r.val, r.par));
+  const anyOut      = readings.filter(r=> !inRange(r.val, r.par));
+  const anyNear     = readings.filter(r=> inRange(r.val, r.par) && nearLimit(r.val, r.par));
+
+  if(criticalOut.length>0){
+    return {status:"NO-GO", color:"danger", reasons: criticalOut.map(r=>`${r.par.label} out of limit`)};
+  }
+  if(anyOut.length>0 || anyNear.length>0){
+    const rs = [
+      ...anyOut.map(r=>`${r.par.label} out of limit`),
+      ...anyNear.map(r=>`${r.par.label} near limit`)
+    ];
+    return {status:"CAUTION", color:"warning", reasons: rs.slice(0,5)};
+  }
+  return {status:"GO", color:"success", reasons:["All parameters within limits."]};
+}
+
+// Chart setup
+remoteBar = new Chart(
   document.getElementById("remoteBar").getContext("2d"),
   {
     type:"bar",
-    data:{labels:["Sensor A","Sensor B","Sensor C","Sensor D"],datasets:[{label:"Reading",data:[40,70,28,85]}]},
-    options:{plugins:{legend:{position:"bottom"}},responsive:true}
+    data:{ labels: remoteParams.map(p=>p.label), datasets:[{ label:"Compliance %", data: remoteParams.map(_=>0) }] },
+    options:{
+      plugins:{ legend:{ position:"bottom" } },
+      responsive:true,
+      scales:{ y:{ beginAtZero:true, max:100 } }
+    }
   }
 );
-addRow("tblRemote",["08:15","PERIM-NE-02","A,B,C,D","85",""],{mode:"bar",labels:["A","B","C","D"],values:[40,70,28,85]});
-var liveTimer=null;
-document.getElementById("formRemote").addEventListener("submit",function(e){
+
+// History helper
+function addStreamRow(station, status, readings){
+  const crits = readings.filter(r=> r.par.critical && !inRange(r.val, r.par))
+                        .map(r=>r.par.label).slice(0,3).join(", ");
+  addRow("tblRemote", [
+    new Date().toTimeString().slice(0,5),
+    station,
+    status,
+    crits || "—",
+    ""
+  ], { mode:"bar", labels: remoteParams.map(p=>p.label), values: readings.map(r=> compliancePercent(r.val, r.par)) });
+}
+
+// Start monitoring
+document.getElementById("formRemote").addEventListener("submit", function(e){
   e.preventDefault();
-  var sec=parseInt(new FormData(e.target).get("freq")||"5",10);
+
+  const fd = new FormData(e.target);
+  const station = fd.get("station") || "STN";
+  const profile = fd.get("profile") || "Production";
+  const sec     = Math.max(2, Math.min(60, parseInt(fd.get("freq")||"5",10)));
+
+  // Apply profile adjustments
+  const adjFn = PROFILE_ADJUST[profile] || ((p)=>p);
+  remoteParams = REMOTE_DEFAULTS.map(p=> adjFn({...p}));
+
+  // Re-render thresholds table with new params
+  (function reRenderThresholds(){
+    const tb = document.getElementById("remoteThresholds");
+    tb.innerHTML = "";
+    remoteParams.forEach((p, idx)=>{
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${p.label}</td>
+        <td>${p.unit}</td>
+        <td><input type="number" step="0.001" class="form-control form-control-sm" 
+                   data-idx="${idx}" data-k="min" value="${p.min ?? ""}" placeholder="—"></td>
+        <td><input type="number" step="0.001" class="form-control form-control-sm" 
+                   data-idx="${idx}" data-k="max" value="${p.max ?? ""}" placeholder="—"></td>
+        <td class="text-center">
+          <input type="checkbox" class="form-check-input" data-idx="${idx}" data-k="critical" ${p.critical?"checked":""}>
+        </td>
+      `;
+      tb.appendChild(tr);
+    });
+  })();
+
+  // Reset existing timer
   if(liveTimer){ clearInterval(liveTimer); }
-  liveTimer=setInterval(function(){
-    var v1=30+Math.random()*25;
-    var v2=50+Math.random()*35;
-    var v3=18+Math.random()*25;
-    var v4=60+Math.random()*35;
-    remoteBar.data.datasets[0].data=[v1,v2,v3,v4];
+
+  // Tick function
+  const badge = document.getElementById("remoteBadge");
+  const reasonsEl = document.getElementById("remoteReasons");
+
+  const tick = ()=>{
+    // Collect readings
+    const readings = remoteParams.map(par=>{
+      const val = sampleLiveValue(par);
+      return { par, val };
+    });
+
+    // Update chart
+    const labels = remoteParams.map(p=>p.label);
+    const data   = readings.map(r=> compliancePercent(r.val, r.par));
+    const colors = readings.map(r=> stateColor(r.val, r.par));
+    remoteBar.data.labels = labels;
+    remoteBar.data.datasets[0].data = data;
+    remoteBar.data.datasets[0].backgroundColor = colors;
     remoteBar.update();
-  }, sec*1000);
-  var now=new Date().toTimeString().slice(0,5);
-  var copy=remoteBar.data.datasets[0].data.slice(0);
-  addRow("tblRemote",[now,"PERIM-NE-02","A,B,C,D",String(copy[3]||0),""],{mode:"bar",labels:["A","B","C","D"],values:copy});
+
+    // Update table
+    renderLiveTable(readings);
+
+    // Decide status
+    const decision = decideStatus(readings);
+    badge.className = `badge bg-${decision.color}`;
+    badge.textContent = decision.status;
+    reasonsEl.innerHTML = decision.reasons.map(t=>`• ${t}`).join("<br>");
+
+    // Push to history (snapshot)
+    addStreamRow(station, decision.status, readings);
+  };
+
+  tick();
+  liveTimer = setInterval(tick, sec*1000);
 });
 
 /* ---------- 3.4.4 Risk ---------- */
@@ -878,81 +1204,66 @@ document.getElementById("formRBI").addEventListener("submit",function(e){
     "Suggested system: "+coatText+". Verify ISO-12944 compliance.";
 });
 
-/* ---------- modal router ---------- */
-document.body.addEventListener("click",function(e){
-  var b=e.target;
-  if(!b || b.tagName!=="BUTTON" || b.textContent!=="View"){ return; }
+/* ---------- Robust modal router for all View buttons ---------- */
+document.body.addEventListener("click", function(e){
+  const btn = e.target.closest('button[data-detail]');
+  if(!btn) return;
+  e.preventDefault();
 
-  var payload=b.dataset.detail||"%7B%7D";
-  var d={};
-  try{ d=JSON.parse(decodeURIComponent(payload)); }catch(err){ d={}; }
+  let d={};
+  try { d = JSON.parse(decodeURIComponent(btn.dataset.detail||"%7B%7D")); }
+  catch { d = {}; }
 
   if(d.mode==="image" && d.img){
-    openImageDetail("Annotated Result","All detected defects are highlighted with class tags and confidence.",d.img);
+    openImageDetail("Annotated Result","All detected defects are highlighted with class tags and confidence.", d.img);
     return;
   }
 
-  var cfg=null;
-  var title="Details";
-  var text="";
-
+  let cfg=null, title="Details", text="";
   if(d.mode==="line"){
     cfg={
       type:"line",
-      data:{
-        labels:d.labels||[],
-        datasets:[
-          {label:"Before",data:(d.before||[]),tension:0.3},
-          {label:"After", data:(d.after||[]),tension:0.3}
-        ]
-      },
+      data:{ labels:d.labels||[], datasets:[
+        {label:"Before",data:(d.before||[]),tension:0.3},
+        {label:"After", data:(d.after||[]),tension:0.3}
+      ]},
       options:{plugins:{legend:{position:"bottom"}}}
     };
-    title="Forecast Comparison";
-    text="Trend before vs AI-improved plan.";
-  }else if(d.mode==="bar"){
+    title="Forecast Comparison"; text="Trend before vs AI-improved plan.";
+  } else if(d.mode==="bar"){
     cfg={
       type:"bar",
-      data:{labels:d.labels||[],datasets:[{label:"Count",data:(d.values||[])}]},
+      data:{ labels:d.labels||[], datasets:[{label:"Count", data:(d.values||[])}] },
       options:{plugins:{legend:{position:"bottom"}}}
     };
-    title="Detections Breakdown";
-    text="Counts by defect class.";
-  }else if(d.mode==="scatter"){
-    var pts=d.points||[];
+    title="Detections Breakdown"; text="Counts by defect class.";
+  } else if(d.mode==="scatter"){
+    const pts=d.points||[];
     cfg={
       type:"scatter",
-      data:{
-        datasets:[
-          {
-            label:"Hotspots",
-            data:pts.map(function(p){return {x:p.x,y:p.y};}),
-            pointRadius:pts.map(function(p){return 3+p.v/25;}),
-            pointBackgroundColor:pts.map(function(p){return gradeColor(p.v);})
-          }
-        ]
-      },
+      data:{ datasets:[{
+        label:"Hotspots",
+        data:pts.map(p=>({x:p.x,y:p.y})),
+        pointRadius:pts.map(p=>3+p.v/25),
+        pointBackgroundColor:pts.map(p=>gradeColor(p.v))
+      }]},
       options:{plugins:{legend:{display:false}}}
     };
-    title="Hotspot Map";
-    text="Larger/darker = higher intensity.";
-  }else if(d.mode==="barh"){
-    var vals=(d.values||[]);
+    title="Hotspot Map"; text="Larger/darker = higher intensity.";
+  } else if(d.mode==="barh"){
+    const vals=d.values||[];
     cfg={
       type:"bar",
-      data:{labels:d.labels||[],datasets:[{label:"Score",data:vals,backgroundColor:vals.map(gradeColor)}]},
-      options:{indexAxis:"y",plugins:{legend:{display:false}},scales:{x:{min:0,max:100}}}
+      data:{ labels:d.labels||[], datasets:[{label:"Score", data:vals, backgroundColor:vals.map(gradeColor)}] },
+      options:{ indexAxis:"y", plugins:{legend:{display:false}}, scales:{x:{min:0,max:100}} }
     };
-    title="Risk View";
-    text="Use to prioritize inspections and CAPA.";
-  }else{
-    cfg={type:"bar",data:{labels:["A","B"],datasets:[{data:[1,2]}]}};
+    title="Risk View"; text="Use to prioritize inspections and CAPA.";
+  } else {
+    cfg={ type:"bar", data:{ labels:["A","B"], datasets:[{data:[1,2]}] } };
   }
 
-  openChartDetail(title,text,cfg);
+  openChartDetail(title, text, cfg);
 });
 </script>
-
-
 </body>
 </html>
